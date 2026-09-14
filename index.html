@@ -486,6 +486,9 @@ function eDrawDiagram(){
   const pDot = svgEl('circle',{cx:Px,cy:Py,r:7,fill:'#AFA9EC',style:'cursor:grab'});
   eSvg.appendChild(pDot);
   const pt = svgEl('text',{x:Px,y:Py-14,'text-anchor':'middle',fill:'#EEEDFE','font-size':13,'font-weight':500}); pt.textContent='P'; eSvg.appendChild(pt);
+  /* invisible, larger hit-area on top so a finger can grab P comfortably on small screens */
+  const pHit = svgEl('circle',{cx:Px,cy:Py,r:26,fill:'transparent','pointer-events':'all',style:'touch-action:none;cursor:grab'});
+  eSvg.appendChild(pHit);
 
   let dragging=false;
   function ptToTheta(evt){
@@ -498,15 +501,16 @@ function eDrawDiagram(){
     if(ang<0) ang+=360;
     return ang;
   }
-  pDot.addEventListener('pointerdown', ev=>{ dragging=true; pDot.setPointerCapture(ev.pointerId); });
-  pDot.addEventListener('pointermove', ev=>{
+  pHit.addEventListener('pointerdown', ev=>{ dragging=true; pHit.setPointerCapture(ev.pointerId); pHit.style.cursor='grabbing'; ev.preventDefault(); });
+  pHit.addEventListener('pointermove', ev=>{
     if(!dragging) return;
     eState.theta = ptToTheta(ev);
     document.getElementById('eTheta').value = Math.round(eState.theta);
     document.getElementById('eThetaOut').textContent = Math.round(eState.theta)+'°';
     eDrawDiagram();
   });
-  pDot.addEventListener('pointerup', ()=>{ dragging=false; });
+  pHit.addEventListener('pointerup', ()=>{ dragging=false; });
+  pHit.addEventListener('pointercancel', ()=>{ dragging=false; });
 }
 document.getElementById('eTheta').addEventListener('input', function(){
   eState.theta = parseFloat(this.value);
@@ -696,10 +700,13 @@ function pDrawDiagram(){
   const pDot = svgEl('circle',{cx:Px,cy:Py,r:7,fill:'#AFA9EC',style:'cursor:grab'});
   pSvg.appendChild(pDot);
   pSvg.appendChild(svgEl('text',{x:Px,y:Py-14,'text-anchor':'middle',fill:'#EEEDFE','font-size':13,'font-weight':500,children:'P'}));
+  /* invisible, larger hit-area on top so a finger can grab P comfortably on small screens */
+  const pHit = svgEl('circle',{cx:Px,cy:Py,r:26,fill:'transparent','pointer-events':'all',style:'touch-action:none;cursor:grab'});
+  pSvg.appendChild(pHit);
 
   let dragging=false;
-  pDot.addEventListener('pointerdown', ev=>{ dragging=true; pDot.setPointerCapture(ev.pointerId); });
-  pDot.addEventListener('pointermove', ev=>{
+  pHit.addEventListener('pointerdown', ev=>{ dragging=true; pHit.setPointerCapture(ev.pointerId); pHit.style.cursor='grabbing'; ev.preventDefault(); });
+  pHit.addEventListener('pointermove', ev=>{
     if(!dragging) return;
     const rect = pSvg.getBoundingClientRect();
     const vbScale = 680/rect.width;
@@ -711,7 +718,8 @@ function pDrawDiagram(){
     document.getElementById('pTOut').textContent = Math.round(pState.t);
     pDrawDiagram();
   });
-  pDot.addEventListener('pointerup', ()=>{ dragging=false; });
+  pHit.addEventListener('pointerup', ()=>{ dragging=false; });
+  pHit.addEventListener('pointercancel', ()=>{ dragging=false; });
 }
 document.getElementById('pT').addEventListener('input', function(){
   pState.t = parseFloat(this.value);
