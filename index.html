@@ -483,6 +483,22 @@ function eDrawDiagram(){
   const rad = theta*Math.PI/180;
   const px_ = a*Math.cos(rad), py_ = b*Math.sin(rad);
   const Px=toSX(px_), Py=toSY(py_);
+
+  /* PS (ফোকাস পর্যন্ত দূরত্ব) ও PM₁ (নিয়ামক রেখা পর্যন্ত লম্ব দূরত্ব) — দাগ টেনে দেখানো, PS/PM₁ সবসময় e এর সমান */
+  let Sx_, Sy_, M1x, M1y;
+  if(isAmajor){ Sx_=c; Sy_=0; M1x=dirVal; M1y=py_; }
+  else { Sx_=0; Sy_=c; M1x=px_; M1y=dirVal; }
+  const distPS = Math.hypot(px_-Sx_, py_-Sy_);
+  const distPM = Math.hypot(px_-M1x, py_-M1y);
+  eSvg.appendChild(svgEl('line',{x1:Px,y1:Py,x2:toSX(Sx_),y2:toSY(Sy_),stroke:'#5DCAA5','stroke-width':1.3,'stroke-dasharray':'2 3'}));
+  eSvg.appendChild(svgEl('line',{x1:Px,y1:Py,x2:toSX(M1x),y2:toSY(M1y),stroke:'#f5c76a','stroke-width':1.3,'stroke-dasharray':'2 3'}));
+  eSvg.appendChild(svgEl('circle',{cx:toSX(M1x),cy:toSY(M1y),r:3,fill:'#f5c76a'}));
+  const psMidX=(Px+toSX(Sx_))/2, psMidY=(Py+toSY(Sy_))/2;
+  const pmMidX=(Px+toSX(M1x))/2, pmMidY=(Py+toSY(M1y))/2;
+  const eTextPS = svgEl('text',{x:psMidX,y:psMidY-6,'text-anchor':'middle',fill:'#8FE0C4','font-size':11}); eTextPS.textContent='PS='+fmt(distPS); eSvg.appendChild(eTextPS);
+  const eTextPM = svgEl('text',{x:pmMidX,y:pmMidY-6,'text-anchor':'middle',fill:'#F5DDA0','font-size':11}); eTextPM.textContent='PM₁='+fmt(distPM); eSvg.appendChild(eTextPM);
+  const eTextRatio = svgEl('text',{x:30,y:36,fill:'#b9b7c2','font-size':12}); eTextRatio.textContent='PS/PM₁ = '+fmt(distPS/distPM)+'  (e = '+fmt(e)+')'; eSvg.appendChild(eTextRatio);
+
   const pDot = svgEl('circle',{cx:Px,cy:Py,r:7,fill:'#AFA9EC',style:'cursor:grab'});
   eSvg.appendChild(pDot);
   const pt = svgEl('text',{x:Px,y:Py-14,'text-anchor':'middle',fill:'#EEEDFE','font-size':13,'font-weight':500}); pt.textContent='P'; eSvg.appendChild(pt);
@@ -682,11 +698,10 @@ function pDrawDiagram(){
   pSvg.appendChild(fDot);
   pSvg.appendChild(svgEl('text',{x:toSX(focusReal[0]),y:toSY(focusReal[1])+18,'text-anchor':'middle',fill:'#FAD6C7','font-size':12,children:'S'}));
 
+  const dv = (orient==='right'||orient==='up') ? -a : a;
   if(orient==='right'||orient==='left'){
-    const dv = orient==='right' ? -a : a;
     pSvg.appendChild(svgEl('line',{x1:toSX(dv),y1:20,x2:toSX(dv),y2:440,stroke:'#B08CF0','stroke-width':1.2,'stroke-dasharray':'4 4'}));
   } else {
-    const dv = orient==='up' ? -a : a;
     pSvg.appendChild(svgEl('line',{x1:20,y1:toSY(dv),x2:660,y2:toSY(dv),stroke:'#B08CF0','stroke-width':1.2,'stroke-dasharray':'4 4'}));
   }
 
@@ -697,6 +712,21 @@ function pDrawDiagram(){
   if(orient==='right'||orient==='left'){ PY=tt; PX=(PY*PY)/(4*a)*(orient==='left'?-1:1); }
   else { PX=tt; PY=(PX*PX)/(4*a)*(orient==='down'?-1:1); }
   const Px=toSX(PX), Py=toSY(PY);
+
+  /* PS (ফোকাস পর্যন্ত দূরত্ব) ও PM (নিয়ামক রেখা পর্যন্ত লম্ব দূরত্ব) — দাগ টেনে দেখানো, PS = PM সবসময় (পরাবৃত্তের সংজ্ঞা) */
+  let Mx, My;
+  if(orient==='right'||orient==='left'){ Mx=dv; My=PY; } else { Mx=PX; My=dv; }
+  const distPS = Math.hypot(PX-focusReal[0], PY-focusReal[1]);
+  const distPM = (orient==='right'||orient==='left') ? Math.abs(PX-dv) : Math.abs(PY-dv);
+  pSvg.appendChild(svgEl('line',{x1:Px,y1:Py,x2:toSX(focusReal[0]),y2:toSY(focusReal[1]),stroke:'#5DCAA5','stroke-width':1.3,'stroke-dasharray':'2 3'}));
+  pSvg.appendChild(svgEl('line',{x1:Px,y1:Py,x2:toSX(Mx),y2:toSY(My),stroke:'#f5c76a','stroke-width':1.3,'stroke-dasharray':'2 3'}));
+  pSvg.appendChild(svgEl('circle',{cx:toSX(Mx),cy:toSY(My),r:3,fill:'#f5c76a'}));
+  const psMidX=(Px+toSX(focusReal[0]))/2, psMidY=(Py+toSY(focusReal[1]))/2;
+  const pmMidX=(Px+toSX(Mx))/2, pmMidY=(Py+toSY(My))/2;
+  pSvg.appendChild(svgEl('text',{x:psMidX,y:psMidY-6,'text-anchor':'middle',fill:'#8FE0C4','font-size':11,children:'PS='+fmt(distPS)}));
+  pSvg.appendChild(svgEl('text',{x:pmMidX,y:pmMidY-6,'text-anchor':'middle',fill:'#F5DDA0','font-size':11,children:'PM='+fmt(distPM)}));
+  pSvg.appendChild(svgEl('text',{x:30,y:36,fill:'#b9b7c2','font-size':12,children:'PS = PM = '+fmt(distPS)}));
+
   const pDot = svgEl('circle',{cx:Px,cy:Py,r:7,fill:'#AFA9EC',style:'cursor:grab'});
   pSvg.appendChild(pDot);
   pSvg.appendChild(svgEl('text',{x:Px,y:Py-14,'text-anchor':'middle',fill:'#EEEDFE','font-size':13,'font-weight':500,children:'P'}));
