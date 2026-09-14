@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>শাঙ্কব রেখা ক্যালকুলেটর — উপবৃত্ত ও পরাবৃত্ত</title>
+<style>
+  :root{
+    --bg:#000000; --panel:#0d0d10; --card:#131318; --border:#2c2c34;
+    --border-strong:#44444e; --text:#f0efe8; --text2:#b9b7c2; --muted:#7d7b88;
+    --purple:#B08CF0; --purple-dark:#3C3489; --coral:#F0997B; --coral-dark:#993C1D;
+    --teal:#5DCAA5; --teal-dark:#0F6E56; --amber:#f5c76a; --danger:#F09595;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:'Noto Sans Bengali','Kalpurush','Segoe UI','Arial Unicode MS',system-ui,sans-serif;
+    padding:20px; line-height:1.65;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  h1{font-size:22px;font-weight:500;margin:0 0 4px}
+  .sub{color:var(--text2);font-size:14px;margin:0 0 18px}
+  .tabs{display:flex;gap:8px;margin-bottom:18px}
+  .tab{flex:1;text-align:center;padding:11px;border-radius:10px;border:0.5px solid var(--border-strong);cursor:pointer;font-size:14.5px;font-weight:500;color:var(--text2);background:var(--panel);transition:all .2s}
+  .tab.active{background:var(--purple-dark);color:#EEEDFE;border-color:var(--purple)}
+  .section{display:none;animation:fadeIn .35s ease}
+  .section.active{display:block}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:860px){.grid2{grid-template-columns:1fr}}
+  .panel{background:var(--panel);border:0.5px solid var(--border);border-radius:12px;padding:18px;margin-bottom:18px}
+  .panel h2{font-size:16px;font-weight:500;margin:0 0 14px;color:var(--text)}
+  label{font-size:13px;color:var(--text2);display:block;margin-bottom:6px}
+  select, input[type=number]{
+    width:100%; background:var(--card); border:0.5px solid var(--border-strong);
+    color:var(--text); border-radius:8px; padding:9px 10px; font-size:14px; margin-bottom:14px;
+    font-family:inherit;
+  }
+  select:focus, input:focus{outline:none;border-color:var(--purple)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .row4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  @media (max-width:600px){.row4{grid-template-columns:1fr 1fr}}
+  button{
+    background:var(--purple-dark); color:#EEEDFE; border:none; border-radius:8px;
+    padding:11px 18px; font-size:14px; font-weight:500; cursor:pointer; width:100%;
+    font-family:inherit; transition:background .15s, transform .1s;
+  }
+  button:hover{background:#4a41a8}
+  button:active{transform:scale(.98)}
+  .err{color:var(--danger);font-size:13px;margin-top:-6px;margin-bottom:12px;display:none}
+  .steps{background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:14px;margin-top:16px;font-size:14px;color:var(--text2);display:none}
+  .steps .line{margin:8px 0;color:var(--text);opacity:0;animation:slideIn .35s ease forwards}
+  .datacards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:16px}
+  .dc{background:var(--card);border:0.5px solid var(--border);border-radius:8px;padding:10px 11px;opacity:0;animation:slideIn .3s ease forwards}
+  @keyframes slideIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+  .dc .l{font-size:11px;color:var(--muted)}
+  .dc .v{font-size:15px;font-weight:500;margin-top:3px}
+  .eqbox{background:var(--card);border:0.5px solid var(--border-strong);border-radius:8px;padding:16px;text-align:center;font-size:19px;margin-top:14px}
+  svg{display:block;width:100%;height:auto}
+  .gridbg{background-image:linear-gradient(rgba(120,120,140,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(120,120,140,0.18) 1px,transparent 1px);background-size:20px 20px}
+  .hint{font-size:12px;color:var(--muted);margin-top:10px}
+  .badge{display:inline-block;background:var(--purple-dark);color:#EEEDFE;font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px}
+  .footer{margin-top:22px;font-size:12px;color:var(--muted);text-align:center}
+
+  /* --- natural math-text fraction rendering (no external libs) --- */
+  .m{font-style:italic}
+  .frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 4px;line-height:1.15;position:relative;top:2px}
+  .frac .num{padding:0 4px 2px;border-bottom:1.3px solid currentColor}
+  .frac .den{padding:2px 4px 0}
+  sup, sub{font-size:0.68em}
+  .refTable{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+  .refTable th, .refTable td{border:0.5px solid var(--border-strong);padding:8px 10px;text-align:center}
+  .refTable th{background:var(--card);color:var(--text2);font-weight:500;font-size:13px}
+  .refTable td.rowlabel{background:var(--card);text-align:right;color:var(--text2);font-size:13px;white-space:nowrap}
+  .refWrap{overflow-x:auto}
+  .glow{animation:glowPulse 1.6s ease-in-out infinite}
+  @keyframes glowPulse{0%,100%{opacity:1}50%{opacity:.45}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>শাঙ্কব রেখা ক্যালকুলেটর <span class="badge">অফলাইন, লোকাল</span></h1>
+  <p class="sub">HSC উচ্চতর গণিত বইয়ের যেকোনো অংক থেকে মান বসিয়ে ধাপে ধাপে সমাধান, সম্পূর্ণ রেফারেন্স টেবিল এবং লাইভ ডায়াগ্রাম — ইন্টারনেট ছাড়াই সবসময় ব্যবহার করা যাবে।</p>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="ellipse" onclick="switchTab('ellipse')">উপবৃত্ত (Ellipse)</div>
+    <div class="tab" data-tab="parabola" onclick="switchTab('parabola')">পরাবৃত্ত (Parabola)</div>
+  </div>
+
+  <!-- ================= ELLIPSE SECTION ================= -->
+  <div class="section active" id="sec-ellipse">
+    <div class="grid2">
+      <div class="panel">
+        <h2>যা দেওয়া আছে বসান</h2>
+        <label for="eCase">উপবৃত্তের আকার নির্বাচন করুন</label>
+        <select id="eCase">
+          <option value="c1">x²/a² + y²/b² = 1 (a &gt; b, কেন্দ্র মূলবিন্দুতে)</option>
+          <option value="c2">x²/a² + y²/b² = 1 (a &lt; b, কেন্দ্র মূলবিন্দুতে)</option>
+          <option value="c3">(x−α)²/a² + (y−β)²/b² = 1 (a &gt; b, কেন্দ্র স্থানান্তরিত)</option>
+          <option value="c4">(x−α)²/a² + (y−β)²/b² = 1 (a &lt; b, কেন্দ্র স্থানান্তরিত)</option>
+        </select>
+
+        <div class="row2" id="eCenterRow" style="display:none">
+          <div><label>α =</label><input type="number" step="any" id="eAlpha" value="0"></div>
+          <div><label>β =</label><input type="number" step="any" id="eBeta" value="0"></div>
+        </div>
+
+        <div class="hint" style="margin:0 0 10px">অংকে যা যা দেওয়া আছে তার মধ্যে যেকোনো দুইটা রাশি বেছে মান বসান।</div>
+        <div class="row2">
+          <div>
+            <label>রাশি ১</label>
+            <select id="eQty1" onchange="eUpdateInputLabels()">
+              <option value="a">a</option>
+              <option value="b">b</option>
+              <option value="c">c (কেন্দ্র→ফোকাস দূরত্ব)</option>
+              <option value="e">e (উৎকেন্দ্রিকতা)</option>
+              <option value="focdist">ফোকাসদ্বয়ের দূরত্ব (2c)</option>
+              <option value="majlen">বৃহৎ অক্ষের দৈর্ঘ্য</option>
+              <option value="minlen">ক্ষুদ্র অক্ষের দৈর্ঘ্য</option>
+              <option value="lr">উপকেন্দ্রিক লম্বের দৈর্ঘ্য</option>
+              <option value="dir">নিয়ামক রেখার মান</option>
+            </select>
+          </div>
+          <div>
+            <label id="eLbl1">মান</label>
+            <input type="number" step="any" id="eIn1" placeholder="যেমন 5">
+          </div>
+        </div>
+        <div class="row2">
+          <div>
+            <label>রাশি ২</label>
+            <select id="eQty2" onchange="eUpdateInputLabels()">
+              <option value="a">a</option>
+              <option value="b" selected>b</option>
+              <option value="c">c (কেন্দ্র→ফোকাস দূরত্ব)</option>
+              <option value="e">e (উৎকেন্দ্রিকতা)</option>
+              <option value="focdist">ফোকাসদ্বয়ের দূরত্ব (2c)</option>
+              <option value="majlen">বৃহৎ অক্ষের দৈর্ঘ্য</option>
+              <option value="minlen">ক্ষুদ্র অক্ষের দৈর্ঘ্য</option>
+              <option value="lr">উপকেন্দ্রিক লম্বের দৈর্ঘ্য</option>
+              <option value="dir">নিয়ামক রেখার মান</option>
+            </select>
+          </div>
+          <div>
+            <label id="eLbl2">মান</label>
+            <input type="number" step="any" id="eIn2" placeholder="যেমন 3">
+          </div>
+        </div>
+
+        <div class="err" id="eErr">দুইটি বৈধ পজিটিভ সংখ্যা দিন।</div>
+        <button onclick="ellipseSolve()">সমাধান করো</button>
+        <div class="steps" id="eSteps"></div>
+        <div class="hint">টিপ: ডায়াগ্রামে P বিন্দু টেনে যাচাই করুন PS/PM₁ = e।</div>
+      </div>
+
+      <div class="panel">
+        <h2>ফলাফল</h2>
+        <div class="eqbox" id="eEq"></div>
+        <div class="datacards" id="eData"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>লাইভ ডায়াগ্রাম</h2>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <label style="width:100px;margin:0">θ (P বিন্দু)</label>
+        <input type="range" id="eTheta" min="0" max="360" value="50" step="1" style="flex:1;margin:0">
+        <span id="eThetaOut" style="font-size:13px;min-width:44px;text-align:right">50°</span>
+      </div>
+      <div style="background:#000;border-radius:10px;padding:8px">
+        <svg viewBox="0 0 680 500" id="eSvg" class="gridbg" style="touch-action:none"></svg>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>সম্পূর্ণ রেফারেন্স টেবিল (বইয়ের ৪টি আকার)</h2>
+      <div class="refWrap">
+        <table class="refTable" id="eRefTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PARABOLA SECTION ================= -->
+  <div class="section" id="sec-parabola">
+    <div class="grid2">
+      <div class="panel">
+        <h2>যা দেওয়া আছে বসান</h2>
+        <label for="pCase">পরাবৃত্তের আকার নির্বাচন করুন</label>
+        <select id="pCase">
+          <option value="right">y² = 4ax  (ডানদিকে খোলা)</option>
+          <option value="left">y² = −4ax  (বামদিকে খোলা)</option>
+          <option value="up">x² = 4ay  (উপরে খোলা)</option>
+          <option value="down">x² = −4ay  (নিচে খোলা)</option>
+        </select>
+
+        <label style="display:flex;align-items:center;gap:8px;margin-bottom:14px;cursor:pointer">
+          <input type="checkbox" id="pShift" style="width:auto;margin:0" onchange="toggleShift()"> শীর্ষবিন্দু মূলবিন্দুতে নয় (স্থানান্তরিত)
+        </label>
+        <div class="row2" id="pCenterRow" style="display:none">
+          <div><label>α (শীর্ষবিন্দুর x) =</label><input type="number" step="any" id="pAlpha" value="0"></div>
+          <div><label>β (শীর্ষবিন্দুর y) =</label><input type="number" step="any" id="pBeta" value="0"></div>
+        </div>
+
+        <label for="pKnownType">কীভাবে a জানবেন?</label>
+        <select id="pKnownType" onchange="pRenderInputs()">
+          <option value="direct">সরাসরি a দেওয়া আছে</option>
+          <option value="point">পরাবৃত্তের উপর একটি বিন্দু (x₁, y₁) দেওয়া আছে</option>
+          <option value="lr">উপকেন্দ্রিক লম্বের দৈর্ঘ্য (4a) দেওয়া আছে</option>
+        </select>
+
+        <div id="pInputArea"></div>
+
+        <div class="err" id="pErr">বৈধ মান দিন।</div>
+        <button onclick="parabolaSolve()">সমাধান করো</button>
+        <div class="steps" id="pSteps"></div>
+      </div>
+
+      <div class="panel">
+        <h2>ফলাফল</h2>
+        <div class="eqbox" id="pEq"></div>
+        <div class="datacards" id="pData"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>লাইভ ডায়াগ্রাম</h2>
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <label style="width:100px;margin:0">t (P বিন্দু)</label>
+        <input type="range" id="pT" min="-100" max="100" value="45" step="1" style="flex:1;margin:0">
+        <span id="pTOut" style="font-size:13px;min-width:44px;text-align:right">45</span>
+      </div>
+      <div style="background:#000;border-radius:10px;padding:8px">
+        <svg viewBox="0 0 680 460" id="pSvg" class="gridbg" style="touch-action:none"></svg>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>সম্পূর্ণ রেফারেন্স টেবিল (৪টি প্রমিত আকার)</h2>
+      <div class="refWrap">
+        <table class="refTable" id="pRefTable"></table>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">এই ফাইলটা সম্পূর্ণ অফলাইনে চলে — ইন্টারনেট ছাড়াই যেকোনো সময় ব্রাউজারে খুলে ব্যবহার করা যাবে। ফাইলটা যেকোনো ফোল্ডারে রেখে ডাবল ক্লিক করলেই চালু হবে।</div>
+</div>
+
+<script>
+/* ===================== shared helpers ===================== */
+function fmt(n){
+  if(!isFinite(n)) return '—';
+  const r = Math.round(n*1000)/1000;
+  return r.toString();
+}
+function frac(num, den){ return '<span class="frac"><span class="num">'+num+'</span><span class="den">'+den+'</span></span>'; }
+function sq(base){ return base+'<sup>2</sup>'; }
+function svgEl(tag, attrs){
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for(const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
+  document.getElementById('sec-ellipse').classList.toggle('active', name==='ellipse');
+  document.getElementById('sec-parabola').classList.toggle('active', name==='parabola');
+}
+
+/* ===================== ELLIPSE ===================== */
+function eUpdateInputLabels(){
+  const s1 = document.getElementById('eQty1'), s2 = document.getElementById('eQty2');
+  document.getElementById('eLbl1').textContent = s1.options[s1.selectedIndex].text+' =';
+  document.getElementById('eLbl2').textContent = s2.options[s2.selectedIndex].text+' =';
+}
+eUpdateInputLabels();
+document.getElementById('eCase').addEventListener('change', function(){
+  document.getElementById('eCenterRow').style.display = (this.value==='c3'||this.value==='c4') ? 'grid' : 'none';
+});
+
+let eState = {a:5,b:3,c:4,e:0.8,alpha:0,beta:0,isAmajor:true,theta:50};
+
+/* map a UI quantity + raw value into an internal role: M, m, c, e, LR, dirVal */
+function eQtyToRole(qty, v, isAmajor){
+  if(qty==='a') return {role: isAmajor?'M':'m', val:v};
+  if(qty==='b') return {role: isAmajor?'m':'M', val:v};
+  if(qty==='c') return {role:'c', val:v};
+  if(qty==='e') return {role:'e', val:v};
+  if(qty==='focdist') return {role:'c', val:v/2};
+  if(qty==='majlen') return {role:'M', val:v/2};
+  if(qty==='minlen') return {role:'m', val:v/2};
+  if(qty==='lr') return {role:'LR', val:v};
+  if(qty==='dir') return {role:'dirVal', val:v};
+}
+
+function bisectRoot(f, lo, hi, iters){
+  let flo = f(lo);
+  let steps = 400, prevX=lo, prevF=flo, found=null;
+  for(let i=1;i<=steps;i++){
+    const x = lo + (hi-lo)*i/steps;
+    const fx = f(x);
+    if(prevF===0){ found=[prevX,prevX]; break; }
+    if(prevF*fx<0){ found=[prevX,x]; break; }
+    prevX=x; prevF=fx;
+  }
+  if(!found) return null;
+  let [a,b] = found;
+  for(let i=0;i<iters;i++){
+    const mid=(a+b)/2, fm=f(mid);
+    if(f(a)*fm<=0) b=mid; else a=mid;
+  }
+  return (a+b)/2;
+}
+
+/* solve for M (semi-major), m (semi-minor), c, e given any two known roles */
+function ellipseSolveGeneric(role1, val1, role2, val2){
+  if(role1===role2) throw 'একই রাশি দুইবার দেওয়া যাবে না — দুইটা ভিন্ন রাশি বেছে নিন।';
+  const idx = {M:0,m:1,c:2,e:3,LR:4,dirVal:5};
+  let r1=role1, v1=val1, r2=role2, v2=val2;
+  if(idx[r1]>idx[r2]){ [r1,r2]=[r2,r1]; [v1,v2]=[v2,v1]; }
+  const key = r1+'-'+r2;
+  let M,m,c,e;
+  const checkE=(x)=>{ if(!(x>0 && x<1)) throw 'উৎকেন্দ্রিকতা e অবশ্যই 0 ও 1 এর মধ্যে হতে হবে — দেওয়া মান যাচাই করুন।'; };
+
+  if(key==='M-m'){ M=v1; m=v2; if(m>=M) throw 'বৃহৎ অক্ষের অর্ধেক ছোট অক্ষের অর্ধেক থেকে বড় হতে হবে।'; c=Math.sqrt(M*M-m*m); e=c/M; }
+  else if(key==='M-c'){ M=v1; c=v2; if(c>=M) throw 'c অবশ্যই M থেকে ছোট হতে হবে।'; m=Math.sqrt(M*M-c*c); e=c/M; }
+  else if(key==='M-e'){ M=v1; e=v2; checkE(e); c=M*e; m=Math.sqrt(M*M-c*c); }
+  else if(key==='M-LR'){ M=v1; const LR=v2; const msq=(LR*M)/2; if(msq>=M*M) throw 'দেওয়া মান দিয়ে বৈধ উপবৃত্ত তৈরি হচ্ছে না।'; m=Math.sqrt(msq); c=Math.sqrt(M*M-m*m); e=c/M; }
+  else if(key==='M-dirVal'){ M=v1; const dv=v2; e=M/dv; checkE(e); c=M*e; m=Math.sqrt(M*M-c*c); }
+  else if(key==='m-c'){ m=v1; c=v2; M=Math.sqrt(m*m+c*c); e=c/M; }
+  else if(key==='m-e'){ m=v1; e=v2; checkE(e); M=m/Math.sqrt(1-e*e); c=M*e; }
+  else if(key==='m-LR'){ m=v1; const LR=v2; M=(2*m*m)/LR; if(m>=M) throw 'দেওয়া মান দিয়ে বৈধ উপবৃত্ত তৈরি হচ্ছে না।'; c=Math.sqrt(M*M-m*m); e=c/M; }
+  else if(key==='m-dirVal'){
+    m=v1; const dv=v2;
+    const disc = Math.pow(dv,4) - 4*dv*dv*m*m;
+    if(disc<0) throw 'দেওয়া মান দিয়ে বৈধ উপবৃত্ত তৈরি হচ্ছে না।';
+    const u1 = (dv*dv - Math.sqrt(disc))/(2*dv*dv);
+    const u2 = (dv*dv + Math.sqrt(disc))/(2*dv*dv);
+    let picked=null;
+    [u1,u2].forEach(u=>{
+      if(u>0 && u<1){ const ee=Math.sqrt(u), MM=ee*dv; if(MM>m){ picked = {e:ee,M:MM}; } }
+    });
+    if(!picked) throw 'দেওয়া মান দিয়ে বৈধ উপবৃত্ত তৈরি হচ্ছে না।';
+    e=picked.e; M=picked.M; c=M*e;
+  }
+  else if(key==='c-e'){ c=v1; e=v2; checkE(e); M=c/e; m=Math.sqrt(M*M-c*c); }
+  else if(key==='c-LR'){ c=v1; const LR=v2; M=(LR+Math.sqrt(LR*LR+16*c*c))/4; e=c/M; m=Math.sqrt(M*M-c*c); }
+  else if(key==='c-dirVal'){ c=v1; const dv=v2; M=Math.sqrt(c*dv); e=c/M; m=Math.sqrt(M*M-c*c); }
+  else if(key==='e-LR'){ e=v1; checkE(e); const LR=v2; M=LR/(2*(1-e*e)); c=M*e; m=M*Math.sqrt(1-e*e); }
+  else if(key==='e-dirVal'){ e=v1; checkE(e); const dv=v2; M=e*dv; c=M*e; m=M*Math.sqrt(1-e*e); }
+  else if(key==='LR-dirVal'){
+    const LR=v1, dv=v2;
+    const f = (MM)=> 2*MM*MM*MM - 2*dv*dv*MM + LR*dv*dv;
+    const Mroot = bisectRoot(f, 1e-6, dv-1e-6, 60);
+    if(Mroot===null) throw 'দেওয়া মান দিয়ে বৈধ উপবৃত্ত তৈরি হচ্ছে না।';
+    M=Mroot; e=M/dv; c=M*e; m=Math.sqrt(Math.max(M*M-c*c,0));
+  }
+  else throw 'এই সমন্বয়টি সমর্থিত নয়।';
+
+  return {M,m,c,e};
+}
+
+function ellipseSolve(){
+  const caseVal = document.getElementById('eCase').value;
+  const isAmajor = (caseVal==='c1'||caseVal==='c3');
+  const shifted = (caseVal==='c3'||caseVal==='c4');
+  const alpha = shifted ? parseFloat(document.getElementById('eAlpha').value)||0 : 0;
+  const beta = shifted ? parseFloat(document.getElementById('eBeta').value)||0 : 0;
+  const qty1 = document.getElementById('eQty1').value;
+  const qty2 = document.getElementById('eQty2').value;
+  const v1 = parseFloat(document.getElementById('eIn1').value);
+  const v2 = parseFloat(document.getElementById('eIn2').value);
+  const errBox = document.getElementById('eErr');
+  errBox.style.display='none';
+
+  if(isNaN(v1)||isNaN(v2)||v1<=0||v2<=0){
+    errBox.style.display='block'; errBox.textContent='দুইটি বৈধ পজিটিভ সংখ্যা দিন।'; return;
+  }
+
+  const role1 = eQtyToRole(qty1, v1, isAmajor);
+  const role2 = eQtyToRole(qty2, v2, isAmajor);
+
+  let res;
+  try{ res = ellipseSolveGeneric(role1.role, role1.val, role2.role, role2.val); }
+  catch(msg){ errBox.style.display='block'; errBox.textContent=msg; return; }
+
+  const {M,m,c,e} = res;
+  const a = isAmajor ? M : m;
+  const b = isAmajor ? m : M;
+
+  eState = {a,b,c,e,alpha,beta,isAmajor,theta:eState.theta};
+
+  const stepsBox = document.getElementById('eSteps');
+  const q1Label = document.getElementById('eQty1').options[document.getElementById('eQty1').selectedIndex].text;
+  const q2Label = document.getElementById('eQty2').options[document.getElementById('eQty2').selectedIndex].text;
+  let steps = [];
+  steps.push('দেওয়া আছে: '+q1Label+' = '+fmt(v1)+', '+q2Label+' = '+fmt(v2)+' ('+(isAmajor?'a বৃহৎ অক্ষ':'b বৃহৎ অক্ষ')+')');
+  steps.push('c (কেন্দ্র থেকে ফোকাসের দূরত্ব) = '+fmt(c));
+  steps.push('e = c / '+(isAmajor?'a':'b')+' = '+fmt(e));
+  steps.push('a = '+fmt(a)+',  b = '+fmt(b));
+  stepsBox.style.display='block';
+  stepsBox.innerHTML = steps.map((s,i)=>'<div class="line" style="animation-delay:'+(i*0.08)+'s">▸ '+s+'</div>').join('');
+
+  const lr = isAmajor ? (2*b*b/a) : (2*a*a/b);
+  const dirVal = isAmajor ? a/e : b/e;
+
+  const xTerm = shifted ? '(x−α)' : 'x';
+  const yTerm = shifted ? '(y−β)' : 'y';
+  document.getElementById('eEq').innerHTML =
+    frac(sq(xTerm), sq(fmt(a))) + ' + ' + frac(sq(yTerm), sq(fmt(b))) + ' = 1';
+
+  let data = [];
+  data.push(['কেন্দ্র', shifted ? '('+fmt(alpha)+', '+fmt(beta)+')' : 'O(0, 0)']);
+  data.push(['a, b', 'a = '+fmt(a)+',  b = '+fmt(b)]);
+  data.push(['c = কেন্দ্র→ফোকাস দূরত্ব', fmt(c)]);
+  data.push(['e (উৎকেন্দ্রিকতা)', fmt(e)]);
+  data.push(['বৃহৎ অক্ষের দৈর্ঘ্য', fmt(2*M)]);
+  data.push(['ক্ষুদ্র অক্ষের দৈর্ঘ্য', fmt(2*m)]);
+
+  if(isAmajor){
+    data.push(['শীর্ষবিন্দু', '('+fmt(a+alpha)+', '+fmt(beta)+'), ('+fmt(-a+alpha)+', '+fmt(beta)+')']);
+    data.push(['সহ-শীর্ষবিন্দু', '('+fmt(alpha)+', '+fmt(b+beta)+'), ('+fmt(alpha)+', '+fmt(-b+beta)+')']);
+    data.push(['উপকেন্দ্র', '('+fmt(c+alpha)+', '+fmt(beta)+'), ('+fmt(-c+alpha)+', '+fmt(beta)+')']);
+    data.push(['নিয়ামক রেখা', (shifted?'x−α':'x')+' = ±'+fmt(dirVal)]);
+    data.push(['উপকেন্দ্রিক লম্বের সমীকরণ', (shifted?'x−α':'x')+' = ±'+fmt(c)]);
+  } else {
+    data.push(['শীর্ষবিন্দু', '('+fmt(alpha)+', '+fmt(b+beta)+'), ('+fmt(alpha)+', '+fmt(-b+beta)+')']);
+    data.push(['সহ-শীর্ষবিন্দু', '('+fmt(a+alpha)+', '+fmt(beta)+'), ('+fmt(-a+alpha)+', '+fmt(beta)+')']);
+    data.push(['উপকেন্দ্র', '('+fmt(alpha)+', '+fmt(c+beta)+'), ('+fmt(alpha)+', '+fmt(-c+beta)+')']);
+    data.push(['নিয়ামক রেখা', (shifted?'y−β':'y')+' = ±'+fmt(dirVal)]);
+    data.push(['উপকেন্দ্রিক লম্বের সমীকরণ', (shifted?'y−β':'y')+' = ±'+fmt(c)]);
+  }
+  data.push(['উপকেন্দ্রিক লম্বের দৈর্ঘ্য', fmt(lr)]);
+
+  document.getElementById('eData').innerHTML = data.map((d,i)=>
+    '<div class="dc" style="animation-delay:'+(i*0.04)+'s"><div class="l">'+d[0]+'</div><div class="v">'+d[1]+'</div></div>'
+  ).join('');
+
+  eDrawDiagram();
+}
+
+/* ellipse diagram */
+const eSvg = document.getElementById('eSvg');
+function eDrawDiagram(){
+  eSvg.innerHTML='';
+  const {a,b,c,e,isAmajor,theta} = eState;
+  const cx=340, cy=250;
+  const M = Math.max(a,b);
+  const halfW=280, halfH=190;
+  const scale = Math.min(halfW/(M/e), halfH/M);
+  const toSX = x=> cx + x*scale;
+  const toSY = y=> cy - y*scale;
+
+  const defs = svgEl('defs',{});
+  defs.innerHTML = '<marker id="earrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#e8e6dc" stroke-width="1.5"/></marker>';
+  eSvg.appendChild(defs);
+
+  eSvg.appendChild(svgEl('line',{x1:20,y1:cy,x2:660,y2:cy,stroke:'#e8e6dc','stroke-width':0.7,'marker-end':'url(#earrow)'}));
+  eSvg.appendChild(svgEl('line',{x1:cx,y1:460,x2:cx,y2:20,stroke:'#e8e6dc','stroke-width':0.7,'marker-end':'url(#earrow)'}));
+
+  const ell = svgEl('ellipse',{cx,cy,rx:a*scale,ry:b*scale,fill:'none',stroke:'#f5f4ee','stroke-width':1.6});
+  eSvg.appendChild(ell);
+
+  const dirVal = M/e;
+  if(isAmajor){
+    [dirVal,-dirVal].forEach((val,i)=>{
+      eSvg.appendChild(svgEl('line',{x1:toSX(val),y1:20,x2:toSX(val),y2:460,stroke:'#B08CF0','stroke-width':1.2,'stroke-dasharray':'4 4'}));
+    });
+    [c,-c].forEach((val,i)=>{
+      const dot = svgEl('circle',{cx:toSX(val),cy:cy,r:4,fill:'#F0997B','class':'glow'});
+      eSvg.appendChild(dot);
+      const t = svgEl('text',{x:toSX(val),y:cy+18,'text-anchor':'middle',fill:'#FAD6C7','font-size':12}); t.textContent = i===0?'S':'S′'; eSvg.appendChild(t);
+    });
+  } else {
+    [dirVal,-dirVal].forEach((val)=>{
+      eSvg.appendChild(svgEl('line',{x1:20,y1:toSY(val),x2:660,y2:toSY(val),stroke:'#B08CF0','stroke-width':1.2,'stroke-dasharray':'4 4'}));
+    });
+    [c,-c].forEach((val,i)=>{
+      const dot = svgEl('circle',{cx,cy:toSY(val),r:4,fill:'#F0997B','class':'glow'});
+      eSvg.appendChild(dot);
+      const t = svgEl('text',{x:cx+16,y:toSY(val)+4,fill:'#FAD6C7','font-size':12}); t.textContent = i===0?'S':'S′'; eSvg.appendChild(t);
+    });
+  }
+
+  const rad = theta*Math.PI/180;
+  const px_ = a*Math.cos(rad), py_ = b*Math.sin(rad);
+  const Px=toSX(px_), Py=toSY(py_);
+  const pDot = svgEl('circle',{cx:Px,cy:Py,r:7,fill:'#AFA9EC',style:'cursor:grab'});
+  eSvg.appendChild(pDot);
+  const pt = svgEl('text',{x:Px,y:Py-14,'text-anchor':'middle',fill:'#EEEDFE','font-size':13,'font-weight':500}); pt.textContent='P'; eSvg.appendChild(pt);
+
+  let dragging=false;
+  function ptToTheta(evt){
+    const rect = eSvg.getBoundingClientRect();
+    const vbScale = 680/rect.width;
+    const x = ((evt.touches?evt.touches[0].clientX:evt.clientX)-rect.left)*vbScale;
+    const y = ((evt.touches?evt.touches[0].clientY:evt.clientY)-rect.top)*vbScale;
+    const relX=(x-cx)/scale, relY=(cy-y)/scale;
+    let ang = Math.atan2(relY/b, relX/a)*180/Math.PI;
+    if(ang<0) ang+=360;
+    return ang;
+  }
+  pDot.addEventListener('pointerdown', ev=>{ dragging=true; pDot.setPointerCapture(ev.pointerId); });
+  pDot.addEventListener('pointermove', ev=>{
+    if(!dragging) return;
+    eState.theta = ptToTheta(ev);
+    document.getElementById('eTheta').value = Math.round(eState.theta);
+    document.getElementById('eThetaOut').textContent = Math.round(eState.theta)+'°';
+    eDrawDiagram();
+  });
+  pDot.addEventListener('pointerup', ()=>{ dragging=false; });
+}
+document.getElementById('eTheta').addEventListener('input', function(){
+  eState.theta = parseFloat(this.value);
+  document.getElementById('eThetaOut').textContent = eState.theta+'°';
+  eDrawDiagram();
+});
+
+/* ellipse reference table (book data, styled as natural math text) */
+function buildERefTable(){
+  const cols = [
+    {h:['x²/a² + y²/b² = 1','যখন a > b'], vals:[
+      '(0, 0)', 'e = √(1 − b²/a²)', '2a', '2b', 'y = 0', 'x = 0', '(±a, 0)',
+      '(±ae, 0) বা (±√(a²−b²), 0)', '2ae = 2√(a²−b²)',
+      frac('±a','e')+' বা '+frac('±a²','√(a²−b²)'),
+      frac('2a','e')+' = '+frac('2a²','√(a²−b²)'),
+      'x = ±a/e', frac('2b²','a'), 'x = ±ae'
+    ]},
+    {h:['x²/a² + y²/b² = 1','যখন a < b'], vals:[
+      '(0, 0)', 'e = √(1 − a²/b²)', '2b', '2a', 'x = 0', 'y = 0', '(0, ±b)',
+      '(0, ±be) বা (0, ±√(b²−a²))', '2be = 2√(b²−a²)',
+      frac('±b','e')+' বা '+frac('±b²','√(b²−a²)'),
+      frac('2b','e')+' = '+frac('2b²','√(b²−a²)'),
+      'y = ±b/e', frac('2a²','b'), 'y = ±be'
+    ]},
+    {h:['(x−α)²/a² + (y−β)²/b² = 1','যখন a > b'], vals:[
+      '(α, β)', 'e = √(1 − b²/a²)', '2a', '2b', 'y−β = 0', 'x−α = 0', '(±a+α, β)',
+      '(±ae+α, β) বা (±√(a²−b²)+α, β)', '2ae = 2√(a²−b²)',
+      frac('±a','e')+'+α বা '+frac('±a²','√(a²−b²)')+'+α',
+      frac('2a','e')+' = '+frac('2a²','√(a²−b²)'),
+      'x−α = ±a/e', frac('2b²','a'), 'x−α = ±ae'
+    ]},
+    {h:['(x−α)²/a² + (y−β)²/b² = 1','যখন a < b'], vals:[
+      '(α, β)', 'e = √(1 − a²/b²)', '2b', '2a', 'x−α = 0', 'y−β = 0', '(α, ±b+β)',
+      '(α, ±be+β) বা (α, ±√(b²−a²)+β)', '2be = 2√(b²−a²)',
+      frac('±b','e')+'+β বা '+frac('±b²','√(b²−a²)')+'+β',
+      frac('2b','e')+' = '+frac('2b²','√(b²−a²)'),
+      'y−β = ±b/e', frac('2a²','b'), 'y−β = ±be'
+    ]}
+  ];
+  const rows = ['কেন্দ্রের স্থানাঙ্ক','উৎকেন্দ্রিকতা','বৃহৎ অক্ষের দৈর্ঘ্য','ক্ষুদ্র অক্ষের দৈর্ঘ্য','বৃহৎ অক্ষের সমীকরণ','ক্ষুদ্র অক্ষের সমীকরণ','শীর্ষদ্বয়ের স্থানাঙ্ক','ফোকাসদ্বয়ের স্থানাঙ্ক','ফোকাসদ্বয়ের দূরত্ব','নিয়ামকরেখার পাদবিন্দু','নিয়ামকরেখা দুইটির দূরত্ব','নিয়ামকরেখা দুইটির সমীকরণ','উপকেন্দ্রিক লম্বের দৈর্ঘ্য','উপকেন্দ্রিক লম্বের সমীকরণ'];
+
+  let html = '<tr><th>উপবৃত্তের আকার</th>'+cols.map(c=>'<th>'+c.h[0]+'<br><span style="color:var(--muted);font-size:12px">'+c.h[1]+'</span></th>').join('')+'</tr>';
+  rows.forEach((r,i)=>{
+    html += '<tr><td class="rowlabel">'+r+'</td>'+cols.map(c=>'<td>'+c.vals[i]+'</td>').join('')+'</tr>';
+  });
+  document.getElementById('eRefTable').innerHTML = html;
+}
+buildERefTable();
+
+/* ===================== PARABOLA ===================== */
+function toggleShift(){
+  document.getElementById('pCenterRow').style.display = document.getElementById('pShift').checked ? 'grid' : 'none';
+}
+function pRenderInputs(){
+  const type = document.getElementById('pKnownType').value;
+  const area = document.getElementById('pInputArea');
+  if(type==='direct'){
+    area.innerHTML = '<label>a =</label><input type="number" step="any" id="pIn1" placeholder="যেমন 3">';
+  } else if(type==='point'){
+    area.innerHTML = '<div class="row2"><div><label>x₁ =</label><input type="number" step="any" id="pIn1" placeholder="যেমন 4"></div><div><label>y₁ =</label><input type="number" step="any" id="pIn2" placeholder="যেমন 8"></div></div>';
+  } else if(type==='lr'){
+    area.innerHTML = '<label>উপকেন্দ্রিক লম্বের দৈর্ঘ্য (4a) =</label><input type="number" step="any" id="pIn1" placeholder="যেমন 12">';
+  }
+}
+pRenderInputs();
+
+let pState = {a:3, orient:'right', alpha:0, beta:0, t:45};
+
+function parabolaSolve(){
+  const orient = document.getElementById('pCase').value;
+  const shifted = document.getElementById('pShift').checked;
+  const alpha = shifted ? (parseFloat(document.getElementById('pAlpha').value)||0) : 0;
+  const beta = shifted ? (parseFloat(document.getElementById('pBeta').value)||0) : 0;
+  const type = document.getElementById('pKnownType').value;
+  const errBox = document.getElementById('pErr');
+  errBox.style.display='none';
+
+  let a; let steps=[];
+  try{
+    if(type==='direct'){
+      a = parseFloat(document.getElementById('pIn1').value);
+      if(isNaN(a)||a<=0) throw 'a একটি ধনাত্মক সংখ্যা হতে হবে।';
+      steps.push('a = '+a+' সরাসরি দেওয়া আছে।');
+    } else if(type==='lr'){
+      const lr = parseFloat(document.getElementById('pIn1').value);
+      if(isNaN(lr)||lr<=0) throw 'বৈধ মান দিন।';
+      a = lr/4;
+      steps.push('উপকেন্দ্রিক লম্ব = 4a = '+lr);
+      steps.push('a = '+lr+'/4 = '+fmt(a));
+    } else if(type==='point'){
+      const x1 = parseFloat(document.getElementById('pIn1').value);
+      const y1 = parseFloat(document.getElementById('pIn2').value);
+      if(isNaN(x1)||isNaN(y1)) throw 'বৈধ মান দিন।';
+      const X = x1-alpha, Y = y1-beta;
+      if(orient==='right'){ if(X<=0) throw 'x₁ (α বাদে) ধনাত্মক হতে হবে।'; a = (Y*Y)/(4*X); steps.push('y² = 4ax সমীকরণে বসিয়ে: a = y₁²/4x₁ = '+fmt(Y*Y)+'/'+fmt(4*X)+' = '+fmt(a)); }
+      else if(orient==='left'){ if(X>=0) throw 'x₁ (α বাদে) ঋণাত্মক হতে হবে।'; a = (Y*Y)/(-4*X); steps.push('y² = −4ax সমীকরণে বসিয়ে: a = '+fmt(a)); }
+      else if(orient==='up'){ if(Y<=0) throw 'y₁ (β বাদে) ধনাত্মক হতে হবে।'; a = (X*X)/(4*Y); steps.push('x² = 4ay সমীকরণে বসিয়ে: a = x₁²/4y₁ = '+fmt(a)); }
+      else { if(Y>=0) throw 'y₁ (β বাদে) ঋণাত্মক হতে হবে।'; a = (X*X)/(-4*Y); steps.push('x² = −4ay সমীকরণে বসিয়ে: a = '+fmt(a)); }
+    }
+  }catch(msg){ errBox.style.display='block'; errBox.textContent=msg; return; }
+
+  pState = {a, orient, alpha, beta, t:pState.t};
+
+  const stepsBox = document.getElementById('pSteps');
+  stepsBox.style.display='block';
+  stepsBox.innerHTML = steps.map((s,i)=>'<div class="line" style="animation-delay:'+(i*0.08)+'s">▸ '+s+'</div>').join('');
+
+  const X = shifted?'(x−α)':'x', Y = shifted?'(y−β)':'y';
+  let eqStr, vertex, focus, directrix, axisEq, lr=4*a;
+  if(orient==='right'){ eqStr = sq(Y)+' = 4a'+X; vertex='('+fmt(alpha)+', '+fmt(beta)+')'; focus='('+fmt(a+alpha)+', '+fmt(beta)+')'; directrix=(shifted?'x−α':'x')+' = −'+fmt(a); axisEq=(shifted?'y−β':'y')+' = 0'; }
+  else if(orient==='left'){ eqStr = sq(Y)+' = −4a'+X; vertex='('+fmt(alpha)+', '+fmt(beta)+')'; focus='('+fmt(-a+alpha)+', '+fmt(beta)+')'; directrix=(shifted?'x−α':'x')+' = '+fmt(a); axisEq=(shifted?'y−β':'y')+' = 0'; }
+  else if(orient==='up'){ eqStr = sq(X)+' = 4a'+Y; vertex='('+fmt(alpha)+', '+fmt(beta)+')'; focus='('+fmt(alpha)+', '+fmt(a+beta)+')'; directrix=(shifted?'y−β':'y')+' = −'+fmt(a); axisEq=(shifted?'x−α':'x')+' = 0'; }
+  else { eqStr = sq(X)+' = −4a'+Y; vertex='('+fmt(alpha)+', '+fmt(beta)+')'; focus='('+fmt(alpha)+', '+fmt(-a+beta)+')'; directrix=(shifted?'y−β':'y')+' = '+fmt(a); axisEq=(shifted?'x−α':'x')+' = 0'; }
+
+  document.getElementById('pEq').innerHTML = eqStr.replace('4a','4×'+fmt(a));
+
+  const data = [
+    ['a', fmt(a)],
+    ['শীর্ষবিন্দু', vertex],
+    ['ফোকাস', focus],
+    ['নিয়ামক রেখা', directrix],
+    ['অক্ষের সমীকরণ', axisEq],
+    ['উপকেন্দ্রিক লম্বের দৈর্ঘ্য (4a)', fmt(lr)]
+  ];
+  document.getElementById('pData').innerHTML = data.map((d,i)=>
+    '<div class="dc" style="animation-delay:'+(i*0.05)+'s"><div class="l">'+d[0]+'</div><div class="v">'+d[1]+'</div></div>'
+  ).join('');
+
+  pDrawDiagram();
+}
+
+const pSvg = document.getElementById('pSvg');
+function pDrawDiagram(){
+  pSvg.innerHTML='';
+  const {a, orient, alpha, beta, t} = pState;
+  const cx=300, cy=380;
+  const range = 120;
+  const scale = 200/Math.max(range, 4*a);
+
+  const defs = svgEl('defs',{});
+  defs.innerHTML = '<marker id="parrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#e8e6dc" stroke-width="1.5"/></marker>';
+  pSvg.appendChild(defs);
+  pSvg.appendChild(svgEl('line',{x1:20,y1:cy,x2:660,y2:cy,stroke:'#e8e6dc','stroke-width':0.7,'marker-end':'url(#parrow)'}));
+  pSvg.appendChild(svgEl('line',{x1:cx,y1:440,x2:cx,y2:20,stroke:'#e8e6dc','stroke-width':0.7,'marker-end':'url(#parrow)'}));
+
+  const toSX = x=> cx + (x)*scale + (orient==='right'||orient==='left'?0:0);
+  const toSY = y=> cy - (y)*scale;
+
+  let pathD='', focusReal, dirLine;
+  const N=60;
+  let pts=[];
+  for(let i=-N;i<=N;i++){
+    const s = i/N;
+    let X,Y;
+    if(orient==='right'||orient==='left'){
+      Y = s*Math.sqrt(4*a*range);
+      X = (Y*Y)/(4*a) * (orient==='left'?-1:1);
+    } else {
+      X = s*Math.sqrt(4*a*range);
+      Y = (X*X)/(4*a) * (orient==='down'?-1:1);
+    }
+    pts.push([X,Y]);
+  }
+  pathD = pts.map((p,i)=> (i===0?'M':'L')+toSX(p[0])+' '+toSY(p[1])).join(' ');
+  pSvg.appendChild(svgEl('path',{d:pathD, fill:'none', stroke:'#f5f4ee','stroke-width':1.6}));
+
+  if(orient==='right') focusReal=[a,0]; else if(orient==='left') focusReal=[-a,0]; else if(orient==='up') focusReal=[0,a]; else focusReal=[0,-a];
+  const fDot = svgEl('circle',{cx:toSX(focusReal[0]),cy:toSY(focusReal[1]),r:4,fill:'#F0997B','class':'glow'});
+  pSvg.appendChild(fDot);
+  pSvg.appendChild(svgEl('text',{x:toSX(focusReal[0]),y:toSY(focusReal[1])+18,'text-anchor':'middle',fill:'#FAD6C7','font-size':12,children:'S'}));
+
+  if(orient==='right'||orient==='left'){
+    const dv = orient==='right' ? -a : a;
+    pSvg.appendChild(svgEl('line',{x1:toSX(dv),y1:20,x2:toSX(dv),y2:440,stroke:'#B08CF0','stroke-width':1.2,'stroke-dasharray':'4 4'}));
+  } else {
+    const dv = orient==='up' ? -a : a;
+    pSvg.appendChild(svgEl('line',{x1:20,y1:toSY(dv),x2:660,y2:toSY(dv),stroke:'#B08CF0','stroke-width':1.2,'stroke-dasharray':'4 4'}));
+  }
+
+  pSvg.appendChild(svgEl('circle',{cx,cy,r:3.5,fill:'#f5f4ee'}));
+
+  let PX,PY;
+  const tt = t;
+  if(orient==='right'||orient==='left'){ PY=tt; PX=(PY*PY)/(4*a)*(orient==='left'?-1:1); }
+  else { PX=tt; PY=(PX*PX)/(4*a)*(orient==='down'?-1:1); }
+  const Px=toSX(PX), Py=toSY(PY);
+  const pDot = svgEl('circle',{cx:Px,cy:Py,r:7,fill:'#AFA9EC',style:'cursor:grab'});
+  pSvg.appendChild(pDot);
+  pSvg.appendChild(svgEl('text',{x:Px,y:Py-14,'text-anchor':'middle',fill:'#EEEDFE','font-size':13,'font-weight':500,children:'P'}));
+
+  let dragging=false;
+  pDot.addEventListener('pointerdown', ev=>{ dragging=true; pDot.setPointerCapture(ev.pointerId); });
+  pDot.addEventListener('pointermove', ev=>{
+    if(!dragging) return;
+    const rect = pSvg.getBoundingClientRect();
+    const vbScale = 680/rect.width;
+    const x = ((ev.touches?ev.touches[0].clientX:ev.clientX)-rect.left)*vbScale;
+    const y = ((ev.touches?ev.touches[0].clientY:ev.clientY)-rect.top)*vbScale;
+    const relX=(x-cx)/scale, relY=(cy-y)/scale;
+    pState.t = (orient==='right'||orient==='left') ? relY : relX;
+    document.getElementById('pT').value = Math.round(pState.t);
+    document.getElementById('pTOut').textContent = Math.round(pState.t);
+    pDrawDiagram();
+  });
+  pDot.addEventListener('pointerup', ()=>{ dragging=false; });
+}
+document.getElementById('pT').addEventListener('input', function(){
+  pState.t = parseFloat(this.value);
+  document.getElementById('pTOut').textContent = this.value;
+  pDrawDiagram();
+});
+
+// fix text content helper for svgEl with children text
+(function(){
+  const origSvgEl = svgEl;
+  window.svgEl = function(tag, attrs){
+    const children = attrs.children;
+    if(children) delete attrs.children;
+    const el = origSvgEl(tag, attrs);
+    if(children) el.textContent = children;
+    return el;
+  };
+})();
+
+function buildPRefTable(){
+  const cols = [
+    {h:'y² = 4ax', v:['(0,0)','(a,0)','x = −a','y = 0','4a']},
+    {h:'y² = −4ax', v:['(0,0)','(−a,0)','x = a','y = 0','4a']},
+    {h:'x² = 4ay', v:['(0,0)','(0,a)','y = −a','x = 0','4a']},
+    {h:'x² = −4ay', v:['(0,0)','(0,−a)','y = a','x = 0','4a']}
+  ];
+  const rows = ['শীর্ষবিন্দু','ফোকাস','নিয়ামক রেখা','অক্ষের সমীকরণ','উপকেন্দ্রিক লম্বের দৈর্ঘ্য'];
+  let html = '<tr><th>পরাবৃত্তের আকার</th>'+cols.map(c=>'<th>'+c.h+'</th>').join('')+'</tr>';
+  rows.forEach((r,i)=>{
+    html += '<tr><td class="rowlabel">'+r+'</td>'+cols.map(c=>'<td>'+c.v[i]+'</td>').join('')+'</tr>';
+  });
+  document.getElementById('pRefTable').innerHTML = html;
+}
+buildPRefTable();
+
+/* init demo */
+document.getElementById('eIn1').value = 5;
+document.getElementById('eIn2').value = 3;
+ellipseSolve();
+document.getElementById('pIn1') ? null : pRenderInputs();
+setTimeout(()=>{ document.getElementById('pIn1').value = 3; parabolaSolve(); }, 0);
+</script>
+</body>
+</html>
