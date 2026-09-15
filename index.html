@@ -83,7 +83,7 @@ html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}
 <body>
 <div class="wrap">
   <h1>কণিক <span class="badge">Created By Tawsif</span></h1>
-  <p class="sub">উপবৃত্ত, পরাবৃত্ত ও অধিবৃত্তের উপাত্ত বসিয়ে ধাপে ধাপে সমাধান, সূত্র ও লাইভ গ্রাফ দেখো।</p>
+  <p class="sub"><b>এটি তৈরি করার মূল উদ্দেশ্য উপাত্তের মাধ্যমে চিত্রকে ভালোভাবে উপলব্ধি করা।</b></p>
 
   <div class="tabs">
     <div class="tab active" data-tab="ellipse" onclick="switchTab('ellipse')">উপবৃত্ত (Ellipse)</div>
@@ -95,7 +95,7 @@ html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}
   <div class="section active" id="sec-ellipse">
     <div class="grid2">
       <div class="panel">
-        <h2>যা দেওয়া আছে বসান</h2>
+        <h2>যা দেওয়া আছে বসাও</h2>
         <label for="eCase">উপবৃত্তের আকার নির্বাচন করুন</label>
         <select id="eCase">
           <option value="c1">x²/a² + y²/b² = 1 (a &gt; b, কেন্দ্র মূলবিন্দুতে)</option>
@@ -109,7 +109,7 @@ html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}
           <div><label>β =</label><input type="number" step="any" id="eBeta" value="0"></div>
         </div>
 
-        <div class="hint" style="margin:0 0 10px">অংকে যা যা দেওয়া আছে তার মধ্যে যেকোনো দুইটা রাশি বেছে মান বসান।</div>
+        <div class="hint" style="margin:0 0 10px">অংকে যা যা দেওয়া আছে তার মধ্যে যেকোনো দুইটা রাশি বেছে মান বসাও।</div>
         <div class="row2">
           <div>
             <label>রাশি ১</label>
@@ -171,7 +171,7 @@ html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}
         <input type="range" id="eTheta" min="0" max="360" value="50" step="1" style="flex:1;margin:0">
         <span id="eThetaOut" style="font-size:13px;min-width:44px;text-align:right">50°</span>
       </div>
-      <div style="background:#000;border-radius:10px;padding:8px">
+      <div style="background:#000000;border-radius:10px;padding:8px">
         <svg viewBox="0 0 680 500" id="eSvg" class="gridbg" style="touch-action:none"></svg>
       </div>
     </div>
@@ -239,7 +239,7 @@ html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}
     </div>
 
     <div class="panel">
-      <h2>সম্পূর্ণ রেফারেন্স টেবিল (৪টি প্রমিত আকার)</h2>
+      <h2>উপবৃত্তের প্রয়োজনীয় সূত্রসমূহ</h2>
       <div class="refWrap">
         <table class="refTable" id="pRefTable"></table>
       </div>
@@ -302,7 +302,7 @@ html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}
     </div>
   </div>
 
-  <div class="footer">সম্পূর্ণ অফলাইন • Mobile + Desktop responsive • Ellipse + Parabola + Hyperbola</div>
+  <div class="footer">সম্পূর্ণ অফলাইন </div>
 </div>
 
 <script>
