@@ -75,16 +75,33 @@
   .refWrap{overflow-x:auto}
   .glow{animation:glowPulse 1.6s ease-in-out infinite}
   @keyframes glowPulse{0%,100%{opacity:1}50%{opacity:.45}}
+
+  /* --- diagram zoom/pan toolbar & live feel --- */
+  .svgWrap{position:relative;background:#000;border-radius:10px;padding:8px}
+  .zoomToolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .zoomToolbar .spacer{flex:1}
+  .zbtn{width:auto;padding:7px 13px;font-size:13px;background:var(--card);border:0.5px solid var(--border-strong);color:var(--text);border-radius:7px}
+  .zbtn:hover{background:#1d1d24}
+  .zoomBadge{font-size:12px;color:var(--muted);min-width:44px;text-align:center;background:var(--card);border:0.5px solid var(--border);border-radius:6px;padding:5px 8px}
+  .diagSvg{cursor:grab;touch-action:none}
+  .diagSvg:active{cursor:grabbing}
+  .coordReadout{font-size:12px;color:var(--muted);margin-top:8px;text-align:right;min-height:16px}
+  .diagPop{animation:diagPopIn .4s cubic-bezier(.2,.8,.3,1)}
+  @keyframes diagPopIn{from{opacity:.2;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+
+/* ===== PREMIUM MOBILE / HYPERBOLA UPGRADE ===== */
+html{scroll-behavior:smooth} body{padding:clamp(8px,2vw,20px);overflow-x:hidden}.wrap{width:100%;max-width:1180px}.tabs{position:sticky;top:5px;z-index:30;backdrop-filter:blur(14px);background:rgba(13,13,16,.88);padding:5px;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.3)}.tab{min-width:0;padding:12px 7px;font-size:clamp(10.5px,2.8vw,14.5px)}.panel{padding:clamp(12px,3vw,18px)}.eqbox{font-size:clamp(16px,4.5vw,21px);overflow-x:auto;white-space:nowrap}.datacards{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.dc{min-width:0}.dc .v{overflow-wrap:anywhere}.refWrap{-webkit-overflow-scrolling:touch}.refTable{min-width:720px}button{min-height:46px}select,input[type=number]{min-height:44px;font-size:16px}.svgWrap{width:100%;overflow:hidden;border-radius:10px}@media(max-width:600px){.grid2{gap:12px}.row2,.row4{grid-template-columns:1fr}.datacards{grid-template-columns:1fr 1fr}.tabs{gap:4px}.tab{padding:10px 4px}.diagram-controls{flex-wrap:wrap!important}.diagram-controls label{width:auto!important;min-width:65px}.diagram-controls input[type=range]{flex:1 1 55%!important}}@media(max-width:390px){.datacards{grid-template-columns:1fr}.tab{font-size:10px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>কণিক <span class="badge">Created By Tawsif</span></h1>
-  <p class="sub">এখানে তোমরা যেকোনো উপাত্ত Add করতে পারবে এবং অধ্যায়টাকে আরেকটু সুন্দরভাবে visualize করতে পারবে</p>
+  <p class="sub">উপবৃত্ত, পরাবৃত্ত ও অধিবৃত্তের উপাত্ত বসিয়ে ধাপে ধাপে সমাধান, সূত্র ও লাইভ গ্রাফ দেখো।</p>
 
   <div class="tabs">
     <div class="tab active" data-tab="ellipse" onclick="switchTab('ellipse')">উপবৃত্ত (Ellipse)</div>
     <div class="tab" data-tab="parabola" onclick="switchTab('parabola')">পরাবৃত্ত (Parabola)</div>
+    <div class="tab" data-tab="hyperbola" onclick="switchTab('hyperbola')">অধিবৃত্ত (Hyperbola)</div>
   </div>
 
   <!-- ================= ELLIPSE SECTION ================= -->
@@ -242,7 +259,63 @@
     </div>
   </div>
 
-  <div class="footer">এই ফাইলটা সম্পূর্ণ অফলাইনে চলে — ইন্টারনেট ছাড়াই যেকোনো সময় ব্রাউজারে খুলে ব্যবহার করা যাবে। ফাইলটা যেকোনো ফোল্ডারে রেখে ডাবল ক্লিক করলেই চালু হবে।</div>
+
+  <!-- ================= HYPERBOLA SECTION ================= -->
+  <div class="section" id="sec-hyperbola">
+    <div class="grid2">
+      <div class="panel">
+        <h2>অধিবৃত্ত — উপাত্ত বসান</h2>
+        <label for="hCase">আকার নির্বাচন করুন</label>
+        <select id="hCase">
+          <option value="right">x²/a² − y²/b² = 1 (ডান-বাম)</option>
+          <option value="up">y²/a² − x²/b² = 1 (উপর-নিচ)</option>
+          <option value="rightShift">(x−α)²/a² − (y−β)²/b² = 1 (স্থানান্তরিত)</option>
+          <option value="upShift">(y−β)²/a² − (x−α)²/b² = 1 (স্থানান্তরিত)</option>
+        </select>
+        <div class="row2" id="hCenterRow" style="display:none">
+          <div><label>α =</label><input type="number" step="any" id="hAlpha" value="0"></div>
+          <div><label>β =</label><input type="number" step="any" id="hBeta" value="0"></div>
+        </div>
+        <div class="hint" style="margin:0 0 10px">যেকোনো দুইটি ভিন্ন রাশি দাও। বাকি সব গুরুত্বপূর্ণ উপাত্ত স্বয়ংক্রিয়ভাবে বের হবে।</div>
+        <div class="row2">
+          <div><label>রাশি ১</label><select id="hQty1" onchange="hUpdateLabels()">
+            <option value="a">a</option><option value="b">b</option><option value="c">c (কেন্দ্র→ফোকাস)</option><option value="e">e (উৎকেন্দ্রিকতা)</option><option value="focdist">2c (ফোকাসদ্বয়ের দূরত্ব)</option><option value="translen">2a (অনুপ্রস্থ অক্ষ)</option><option value="conjlen">2b (সংযুগী অক্ষ)</option><option value="lr">2b²/a (উপকেন্দ্রিক লম্ব)</option><option value="dir">a/e (কেন্দ্র→নিয়ামকরেখা)</option>
+          </select></div>
+          <div><label id="hLbl1">মান</label><input type="number" step="any" id="hIn1" placeholder="যেমন 5"></div>
+        </div>
+        <div class="row2">
+          <div><label>রাশি ২</label><select id="hQty2" onchange="hUpdateLabels()">
+            <option value="a">a</option><option value="b" selected>b</option><option value="c">c (কেন্দ্র→ফোকাস)</option><option value="e">e (উৎকেন্দ্রিকতা)</option><option value="focdist">2c (ফোকাসদ্বয়ের দূরত্ব)</option><option value="translen">2a (অনুপ্রস্থ অক্ষ)</option><option value="conjlen">2b (সংযুগী অক্ষ)</option><option value="lr">2b²/a (উপকেন্দ্রিক লম্ব)</option><option value="dir">a/e (কেন্দ্র→নিয়ামকরেখা)</option>
+          </select></div>
+          <div><label id="hLbl2">মান</label><input type="number" step="any" id="hIn2" placeholder="যেমন 3"></div>
+        </div>
+        <div class="err" id="hErr">বৈধ পজিটিভ সংখ্যা দিন।</div>
+        <button onclick="hyperbolaSolve()">সমাধান করো</button>
+        <div class="steps" id="hSteps"></div>
+      </div>
+      <div class="panel">
+        <h2>ফলাফল</h2>
+        <div class="eqbox" id="hEq"></div>
+        <div class="datacards" id="hData"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2>লাইভ ইন্টার‌্যাক্টিভ ডায়াগ্রাম</h2>
+      <div class="diagram-controls" style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+        <label style="width:100px;margin:0">t (P বিন্দু)</label>
+        <input type="range" id="hT" min="-5" max="5" value="1.2" step="0.01" style="flex:1;margin:0">
+        <span id="hTOut" style="font-size:13px;min-width:44px;text-align:right">1.20</span>
+      </div>
+      <div class="svgWrap" style="background:#000;padding:8px"><svg viewBox="0 0 680 500" id="hSvg" class="gridbg" style="touch-action:none"></svg></div>
+      <div class="hint">P বিন্দুতে টান দাও বা slider সরাও — hyperbola, asymptote ও coordinate live update হবে।</div>
+    </div>
+    <div class="panel">
+      <h2>অধিবৃত্তের সম্পূর্ণ প্রয়োজনীয় সূত্রসমূহ</h2>
+      <div class="refWrap"><table class="refTable" id="hRefTable"></table></div>
+    </div>
+  </div>
+
+  <div class="footer">সম্পূর্ণ অফলাইন • Mobile + Desktop responsive • Ellipse + Parabola + Hyperbola</div>
 </div>
 
 <script>
@@ -263,6 +336,7 @@ function switchTab(name){
   document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===name));
   document.getElementById('sec-ellipse').classList.toggle('active', name==='ellipse');
   document.getElementById('sec-parabola').classList.toggle('active', name==='parabola');
+  document.getElementById('sec-hyperbola').classList.toggle('active', name==='hyperbola');
 }
 
 /* ===================== ELLIPSE ===================== */
@@ -785,12 +859,45 @@ function buildPRefTable(){
 }
 buildPRefTable();
 
+
+/* ===================== HYPERBOLA ===================== */
+function hUpdateLabels(){const a=document.getElementById('hQty1'),b=document.getElementById('hQty2');document.getElementById('hLbl1').textContent=a.options[a.selectedIndex].text+' =';document.getElementById('hLbl2').textContent=b.options[b.selectedIndex].text+' =';}
+hUpdateLabels();
+document.getElementById('hCase').addEventListener('change',function(){document.getElementById('hCenterRow').style.display=(this.value==='rightShift'||this.value==='upShift')?'grid':'none';});
+let hState={a:5,b:3,c:Math.sqrt(34),e:Math.sqrt(34)/5,alpha:0,beta:0,orient:'right',t:1.2};
+function hRole(q,v){if(q==='a')return['a',v];if(q==='b')return['b',v];if(q==='c')return['c',v];if(q==='e')return['e',v];if(q==='focdist')return['c',v/2];if(q==='translen')return['a',v/2];if(q==='conjlen')return['b',v/2];if(q==='lr')return['lr',v];return['dir',v];}
+function hSolve(r1,v1,r2,v2){if(r1===r2)throw'একই রাশি দুইবার দেওয়া যাবে না।';let a,b,c,e;const key=[r1,r2].sort().join('-');const E=x=>{if(!(x>1))throw'e অবশ্যই 1-এর চেয়ে বড় হতে হবে।'};
+if(key==='a-b'){a=r1==='a'?v1:v2;b=r1==='b'?v1:v2;c=Math.sqrt(a*a+b*b);e=c/a;}
+else if(key==='a-c'){a=r1==='a'?v1:v2;c=r1==='c'?v1:v2;if(c<=a)throw'c অবশ্যই a-এর চেয়ে বড় হতে হবে।';b=Math.sqrt(c*c-a*a);e=c/a;}
+else if(key==='a-e'){a=r1==='a'?v1:v2;e=r1==='e'?v1:v2;E(e);c=a*e;b=Math.sqrt(c*c-a*a);}
+else if(key==='a-lr'){a=r1==='a'?v1:v2;let L=r1==='lr'?v1:v2;b=Math.sqrt(L*a/2);c=Math.sqrt(a*a+b*b);e=c/a;}
+else if(key==='a-dir'){a=r1==='a'?v1:v2;let d=r1==='dir'?v1:v2;e=a/d;E(e);c=a*e;b=Math.sqrt(c*c-a*a);}
+else if(key==='b-c'){b=r1==='b'?v1:v2;c=r1==='c'?v1:v2;if(c<=b)throw'c অবশ্যই b-এর চেয়ে বড় হতে হবে।';a=Math.sqrt(c*c-b*b);e=c/a;}
+else if(key==='b-e'){b=r1==='b'?v1:v2;e=r1==='e'?v1:v2;E(e);a=b/Math.sqrt(e*e-1);c=a*e;}
+else if(key==='b-lr'){b=r1==='b'?v1:v2;let L=r1==='lr'?v1:v2;a=2*b*b/L;c=Math.sqrt(a*a+b*b);e=c/a;}
+else if(key==='b-dir'){b=r1==='b'?v1:v2;let d=r1==='dir'?v1:v2;let f=x=>x*x/Math.sqrt(x*x+b*b)-d;let root=bisectRoot(f,1e-6,Math.max(10*b,10*d,1),80);if(root===null)throw'দেওয়া মান দিয়ে বৈধ অধিবৃত্ত তৈরি হচ্ছে না।';a=root;c=Math.sqrt(a*a+b*b);e=c/a;}
+else if(key==='c-e'){c=r1==='c'?v1:v2;e=r1==='e'?v1:v2;E(e);a=c/e;b=Math.sqrt(c*c-a*a);}
+else if(key==='c-lr'){c=r1==='c'?v1:v2;let L=r1==='lr'?v1:v2;a=(-L/2+Math.sqrt(L*L/4+4*c*c))/2;b=Math.sqrt(c*c-a*a);e=c/a;}
+else if(key==='c-dir'){c=r1==='c'?v1:v2;let d=r1==='dir'?v1:v2;a=Math.sqrt(c*d);if(a>=c)throw'd অবশ্যই c-এর চেয়ে ছোট হতে হবে।';b=Math.sqrt(c*c-a*a);e=c/a;}
+else if(key==='e-lr'){e=r1==='e'?v1:v2;E(e);let L=r1==='lr'?v1:v2;a=L*e*e/(2*(e*e-1));c=a*e;b=Math.sqrt(c*c-a*a);}
+else if(key==='e-dir'){e=r1==='e'?v1:v2;let d=r1==='dir'?v1:v2;E(e);a=e*d;c=a*e;b=Math.sqrt(c*c-a*a);}
+else if(key==='lr-dir'){let L=r1==='lr'?v1:v2,d=r1==='dir'?v1:v2;let f=x=>2*x*x/Math.sqrt(x*x+(L*x/2))-d;let root=bisectRoot(f,1e-6,Math.max(100*d,100*L,1),80);if(root===null)throw'দেওয়া মান দিয়ে বৈধ অধিবৃত্ত তৈরি হচ্ছে না।';a=root;b=Math.sqrt(L*a/2);c=Math.sqrt(a*a+b*b);e=c/a;}
+else throw'এই সমন্বয়টি সমর্থিত নয়।';return{a,b,c,e};}
+function hyperbolaSolve(){const typ=document.getElementById('hCase').value,shift=typ.includes('Shift'),orient=(typ==='up'||typ==='upShift')?'up':'right';const alpha=shift?(parseFloat(document.getElementById('hAlpha').value)||0):0,beta=shift?(parseFloat(document.getElementById('hBeta').value)||0):0;const q1=document.getElementById('hQty1').value,q2=document.getElementById('hQty2').value,v1=parseFloat(document.getElementById('hIn1').value),v2=parseFloat(document.getElementById('hIn2').value),err=document.getElementById('hErr');err.style.display='none';if(!isFinite(v1)||!isFinite(v2)||v1<=0||v2<=0){err.style.display='block';err.textContent='দুইটি বৈধ পজিটিভ সংখ্যা দিন।';return;}let R1=hRole(q1,v1),R2=hRole(q2,v2),r;try{r=hSolve(R1[0],R1[1],R2[0],R2[1]);}catch(x){err.style.display='block';err.textContent=x;return;}const{a,b,c,e}=r;hState={a,b,c,e,alpha,beta,orient,t:hState.t};
+const X=shift?'(x−α)':'x',Y=shift?'(y−β)':'y';document.getElementById('hEq').innerHTML=orient==='right'?frac(sq(X),sq(fmt(a)))+' − '+frac(sq(Y),sq(fmt(b)))+' = 1':frac(sq(Y),sq(fmt(a)))+' − '+frac(sq(X),sq(fmt(b)))+' = 1';
+const v=orient==='right'?`(${fmt(alpha+a)}, ${fmt(beta)}), (${fmt(alpha-a)}, ${fmt(beta)})`:`(${fmt(alpha)}, ${fmt(beta+a)}), (${fmt(alpha)}, ${fmt(beta-a)})`;const f=orient==='right'?`(${fmt(alpha+c)}, ${fmt(beta)}), (${fmt(alpha-c)}, ${fmt(beta)})`:`(${fmt(alpha)}, ${fmt(beta+c)}), (${fmt(alpha)}, ${fmt(beta-c)})`;const asym=orient==='right'?`y−β = ±${fmt(b/a)}(x−α)`:`y−β = ±${fmt(a/b)}(x−α)`;const direct=orient==='right'?`x = ${fmt(alpha+a/e)} এবং x = ${fmt(alpha-a/e)}`:`y = ${fmt(beta+a/e)} এবং y = ${fmt(beta-a/e)}`;const data=[['a (অর্ধ-অনুপ্রস্থ অক্ষ)',fmt(a)],['b (অর্ধ-সংযুগী অক্ষ)',fmt(b)],['c (কেন্দ্র→ফোকাস)',fmt(c)],['e (উৎকেন্দ্রিকতা)',fmt(e)],['কেন্দ্র',`(${fmt(alpha)}, ${fmt(beta)})`],['শীর্ষবিন্দু',v],['ফোকাস',f],['2a অনুপ্রস্থ অক্ষ',fmt(2*a)],['2b সংযুগী অক্ষ',fmt(2*b)],['2b²/a উপকেন্দ্রিক লম্ব',fmt(2*b*b/a)],['নিয়ামকরেখা',direct],['অসীমাসন্ন সরলরেখা',asym]];document.getElementById('hData').innerHTML=data.map((d,i)=>`<div class="dc" style="animation-delay:${i*.035}s"><div class="l">${d[0]}</div><div class="v">${d[1]}</div></div>`).join('');document.getElementById('hSteps').style.display='block';document.getElementById('hSteps').innerHTML=[`দেওয়া আছে: ${document.getElementById('hQty1').options[document.getElementById('hQty1').selectedIndex].text} = ${fmt(v1)}, ${document.getElementById('hQty2').options[document.getElementById('hQty2').selectedIndex].text} = ${fmt(v2)}`,`c² = a² + b²  ⇒  c = ${fmt(c)}`,`e = c/a = ${fmt(e)}`,`a = ${fmt(a)},  b = ${fmt(b)}`].map((x,i)=>`<div class="line" style="animation-delay:${i*.08}s">▸ ${x}</div>`).join('');hDraw();}
+const hSvg=document.getElementById('hSvg');
+function hDraw(){hSvg.innerHTML='';const{a,b,c,alpha,beta,orient,t}=hState,cx=340,cy=250,range=Math.max(8,2*c+2);const scale=Math.min(300/range,210/range),sx=x=>cx+(x-alpha)*scale,sy=y=>cy-(y-beta)*scale;const defs=svgEl('defs',{});defs.innerHTML='<marker id="hxarrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#e8e6dc" stroke-width="1.5"/></marker>';hSvg.appendChild(defs);hSvg.appendChild(svgEl('line',{x1:20,y1:cy,x2:660,y2:cy,stroke:'#e8e6dc','stroke-width':.7,'marker-end':'url(#hxarrow)'}));hSvg.appendChild(svgEl('line',{x1:cx,y1:480,x2:cx,y2:20,stroke:'#e8e6dc','stroke-width':.7,'marker-end':'url(#hxarrow)'}));const m=orient==='right'?b/a:a/b;for(const sg of [1,-1]){if(orient==='right')hSvg.appendChild(svgEl('line',{x1:sx(alpha-range),y1:sy(beta-sg*m*range),x2:sx(alpha+range),y2:sy(beta+sg*m*range),stroke:'#B08CF0','stroke-width':1,'stroke-dasharray':'5 5'}));else hSvg.appendChild(svgEl('line',{x1:sx(alpha-range),y1:sy(beta-sg*(1/m)*range),x2:sx(alpha+range),y2:sy(beta+sg*(1/m)*range),stroke:'#B08CF0','stroke-width':1,'stroke-dasharray':'5 5'}));}
+let paths=[];for(const branch of [-1,1]){let d='';for(let i=0;i<=100;i++){const u=0.05+i/100*Math.acosh(Math.max(1.001,range/a));let X,Y;if(orient==='right'){X=branch*a*Math.cosh(u);Y=b*Math.sinh(u);}else{Y=branch*a*Math.cosh(u);X=b*Math.sinh(u);}d+=(i?'L':'M')+sx(alpha+X)+' '+sy(beta+Y)+' ';}paths.push(d);}if(orient==='right'){for(const branch of [-1,1]){let d='';for(let i=0;i<=100;i++){const u=.05+i/100*Math.acosh(Math.max(1.001,range/a)),X=branch*a*Math.cosh(u),Y=b*Math.sinh(u);d+=(i?'L':'M')+sx(alpha+X)+' '+sy(beta-Y)+' ';}paths.push(d);}}else{for(const branch of [-1,1]){let d='';for(let i=0;i<=100;i++){const u=.05+i/100*Math.acosh(Math.max(1.001,range/a)),Y=branch*a*Math.cosh(u),X=b*Math.sinh(u);d+=(i?'L':'M')+sx(alpha+X)+' '+sy(beta-Y)+' ';}paths.push(d);}}paths.forEach(d=>hSvg.appendChild(svgEl('path',{d,fill:'none',stroke:'#f5f4ee','stroke-width':1.7})));hSvg.appendChild(svgEl('circle',{cx:sx(alpha),cy:sy(beta),r:3.5,fill:'#f5f4ee'}));let verts,focus;if(orient==='right'){verts=[[alpha+a,beta],[alpha-a,beta]];focus=[[alpha+c,beta],[alpha-c,beta]];}else{verts=[[alpha,beta+a],[alpha,beta-a]];focus=[[alpha,beta+c],[alpha,beta-c]];}verts.forEach(p=>hSvg.appendChild(svgEl('circle',{cx:sx(p[0]),cy:sy(p[1]),r:4,fill:'#AFA9EC'})));focus.forEach(p=>hSvg.appendChild(svgEl('circle',{cx:sx(p[0]),cy:sy(p[1]),r:4,fill:'#F0997B','class':'glow'})));let PX,PY;if(orient==='right'){PX=alpha+a*Math.cosh(t);PY=beta+b*Math.sinh(t);}else{PX=alpha+b*Math.sinh(t);PY=beta+a*Math.cosh(t);}const px=sx(PX),py=sy(PY);hSvg.appendChild(svgEl('circle',{cx:px,cy:py,r:7,fill:'#5DCAA5'}));hSvg.appendChild(svgEl('text',{x:px,y:py-14,'text-anchor':'middle',fill:'#8FE0C4','font-size':13,'font-weight':500,children:'P'}));const hit=svgEl('circle',{cx:px,cy:py,r:28,fill:'transparent','pointer-events':'all',style:'touch-action:none;cursor:grab'});hSvg.appendChild(hit);let drag=false;hit.addEventListener('pointerdown',e=>{drag=true;hit.setPointerCapture(e.pointerId);e.preventDefault()});hit.addEventListener('pointermove',e=>{if(!drag)return;const r=hSvg.getBoundingClientRect(),q=(e.clientX-r.left)*(680/r.width);let nt;if(orient==='right'){const xx=Math.max(1.001,Math.abs((q-cx)/(a*scale)));nt=Math.acosh(xx)*(e.clientY<r.top+r.height/2?1:-1);}else{const yy=Math.max(1.001,Math.abs((cy-(e.clientY-r.top)*(500/r.height))/(a*scale)));nt=Math.acosh(yy)*(e.clientX>r.left+r.width/2?1:-1);}hState.t=Math.max(-5,Math.min(5,nt));document.getElementById('hT').value=hState.t;document.getElementById('hTOut').textContent=hState.t.toFixed(2);hDraw()});hit.addEventListener('pointerup',()=>drag=false);hit.addEventListener('pointercancel',()=>drag=false);}
+document.getElementById('hT').addEventListener('input',function(){hState.t=parseFloat(this.value);document.getElementById('hTOut').textContent=hState.t.toFixed(2);hDraw()});
+function buildHRef(){const cols=[['x²/a² − y²/b² = 1',['(0,0)','(±a,0)','(±c,0)','x=±a/e','y=±(b/a)x','2b²/a']],['y²/a² − x²/b² = 1',['(0,0)','(0,±a)','(0,±c)','y=±a/e','y=±(a/b)x','2b²/a']]];const rows=['কেন্দ্র','শীর্ষবিন্দু','ফোকাস','নিয়ামকরেখা','অসীমাসন্ন সরলরেখা','উপকেন্দ্রিক লম্বের দৈর্ঘ্য'];let o='<tr><th>রাশি</th>'+cols.map(c=>`<th>${c[0]}</th>`).join('')+'</tr>';rows.forEach((r,i)=>o+=`<tr><td class="rowlabel">${r}</td>`+cols.map(c=>`<td>${c[1][i]}</td>`).join('')+'</tr>');document.getElementById('hRefTable').innerHTML=o;}buildHRef();
+
 /* init demo */
 document.getElementById('eIn1').value = 5;
 document.getElementById('eIn2').value = 3;
 ellipseSolve();
 document.getElementById('pIn1') ? null : pRenderInputs();
-setTimeout(()=>{ document.getElementById('pIn1').value = 3; parabolaSolve(); }, 0);
+setTimeout(()=>{ document.getElementById('pIn1').value = 3; parabolaSolve(); document.getElementById('hIn1').value=5; document.getElementById('hIn2').value=3; hyperbolaSolve(); }, 0);
 </script>
 </body>
 </html>
